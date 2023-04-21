@@ -1,5 +1,5 @@
 # Hydrogen-S-state-2-photon
-These modules contain functions relating to the calculations presented in [Link to paper](). 
+These modules contain functions relating to the calculations presented in [paper](). 
 Specifically, the calculations of A.C. polarisability and atom-photon scattering rates in linearly polarised, off-resonance optical fields for S states in hydrogen. Calculations proceed via implicit summation over a basis of radial Sturmian functions, angular components take their analytical values.  The mathematical details of these calculations are described in the accompanying [supplementary material]().
 
 ## Installation
@@ -97,5 +97,3 @@ joseph.p.scott@durham.ac.uk
 
 ## Date
 Fri Apr 21 2023
-
-## License
