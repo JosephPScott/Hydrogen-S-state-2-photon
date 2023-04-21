@@ -92,7 +92,10 @@ Currently, calculations are limited to s states in atomic hydrogen and linearly 
 Efficiency can also be improved upon - particularly when plotting. At the moment, calling the full calculation from "Main_calculation_functions.py" for plots of polarisation or scattering rates leads to many redundnat calculations. The calculation of the discrete states in "Convergence_and_correctness_tests.py" could also stand significant improvement.
 
 ## Authors
-Joseph P. Scott, Department of Physics, Durham University, Durham, UK
+Joseph P. Scott
+
+Department of Physics, Durham University, Durham, UK
+
 joseph.p.scott@durham.ac.uk
 
 ## Date
