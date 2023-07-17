@@ -1,17 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-Last edited on Wed Apr 19 2023
+Last edited on Monday 17 July 2023
 
 @author: joseph.p.scott@durham.ac.uk
+
+This module contains a series of functions that are useful for evaluating the accuracy and precision of the Main_calculation_functions.
+Accuracy is checked by a function that allows for the calculation of Raman scattering cross sections, comparison of the energy spectrum and eigenvectors with theoretical values, and the radial dipole matrix elements
+Stability is assessed by plots of heatmaps showing the variation of calculated values with changes to the size of the Sturmian basis and the parameter k.
 """
 
-import Implicit_sum_functions as imp
+import Main_calculation_functions as imp
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import scipy.special as spec
 import seaborn as sns
 import pandas as pd
+
+###############################################################################
+#Function used to calculate the Raman scattering cross sections for comparison to previous calculations.
+
+def obtain_cross_section(n, nmax, k):
+    waves = (500, 530, 600, 655, 657, 693.4, 800, 900, 1000, 1060)
+    Inten = 10**4
+    for w in waves:
+        Rate = imp.S_Rayleigh(n, w, nmax, k, Inten)
+        eng = imp.h*imp.c/(w*10**(-9))
+        first = Rate*eng
+        print(f"At {w}")
+        print(f"only first {first}")
+    return 
+
 
 ###############################################################################
 #Functions used to check the produced energy spectrum
@@ -44,8 +63,8 @@ def Avdiff(nmax, k): # Averages the differences between the analytic theory and 
     return tot/num
 
 def Spectrum_error_map(): # Plots a heatmap of the average correcness of the returned hydrogen spectrum with varying conditions on the sturmian basis
-    ks = np.arange(0.001, 10.001, 0.125) # Free parameter
-    ns = np.arange(100, 500, 5) # Number of Sturmian functions used
+    ks = np.arange(0.1, 4.1, 0.2)
+    ns = np.arange(200, 400, 10)
     
     vals = np.array([[Avdiff(nmax, k) for k in ks] for nmax in ns])
     df = pd.DataFrame(vals, columns=np.round(ks, 2), index=np.round(ns, 2))
@@ -100,22 +119,8 @@ def Calculate_DipoleElm(initial, final, nmax, k): # Function calculates the dipo
     else:
         return 0
 
-def Check_DipoleKdep(initial_st, final_st, nmax): # Plots the level of assymetry between the "forward" and "reverse" dipole matrix elements with the free parameter k
-    ks = np.arange(0.1, 10.1, 0.1) 
-    V_initials = np.array([imp.Schrodinger(initial_st, nmax, k)[1] for k in ks])
-    V_finals = np.array([imp.Schrodinger(final_st, nmax, k)[1] for k in ks])
-    Dipoles = np.array([abs(Calculate_DipoleElm(V_initials[i], V_finals[i], nmax, ks[i])) - abs(Calculate_DipoleElm(V_initials[0], V_finals[0], nmax, ks[0])) for i in range(0, len(ks))])
-    
-    FigdipK = plt.figure()
-    axdipK = FigdipK.add_subplot()
-    axdipK.plot(ks, Dipoles)
-    axdipK.set_title(('Variation of dipole matrix element with k for transition', initial_st, ' to ', final_st))
-    axdipK.set_xlabel("k")
-    axdipK.set_ylabel("Absolute variaion of radial element")
-    plt.show()
-
 def Dipole_stability(initial_st, final_st): # Plots a heatmap showing the variation of a particular dipole matrix element squared as k and nmax vary. Values are relative to that calculated at nmax = 300 and k = 0.2 by default
-    ks = np.arange(0.1, 0.51, 0.01)
+    ks = np.arange(0.1, 0.51, 0.025)
     ns = np.arange(290, 311, 1)
     #Compare to the value calculated at nmax = 300, k = 0.3
     base = abs(Calculate_DipoleElm(imp.Schrodinger(initial_st, 300, 0.3)[1], imp.Schrodinger(final_st, 300, 0.3)[1], 300, 0.3))**2
@@ -135,7 +140,7 @@ def Dipole_stability(initial_st, final_st): # Plots a heatmap showing the variat
 #Functions to check the polarisability and values of magic wavelengths
 
 def Polarisabilty_stability(n, wave): # Plots a heatmap showing the variation of given S state polarisation at a particular wavelength as k and nmax vary. Values are relative to that calculated at nmax = 300 and k = 0.2 by default
-    ks = np.arange(0.1, 0.51, 0.01)
+    ks = np.arange(0.1, 0.51, 0.025)
     ns = np.arange(290, 311, 1)
     #Compare to the value calculated at nmax = 300, k = 0.3
     base = imp.S_pol(n, wave, 300, 0.3)
@@ -152,7 +157,7 @@ def Polarisabilty_stability(n, wave): # Plots a heatmap showing the variation of
     plt.show()
 
 def Magic_wavelength_stability(wguess): # Plots a heatmap showing the variation of a particular 1S-2S magic wavelength as k and nmax vary. Values are relative to that calculated at nmax = 300 and k = 0.2 by default
-    k2s = np.arange(0.1, 0.51, 0.01)
+    k2s = np.arange(0.1, 0.51, 0.025)
     n2s = np.arange(290, 311, 1)
     #Compare to the value calculated at nmax = 300, k = 0.3
     base = imp.Find_1S2S_magicwave(300, wguess, 0.3)
@@ -172,12 +177,12 @@ def Magic_wavelength_stability(wguess): # Plots a heatmap showing the variation 
 #Function to check the Raman scattering calculations
 
 def Raman_scattering_stability(n, state, wave): # Plots a heatmap showing the variation of a particular Raman scattering rate as k and nmax vary. Values are relative to that calculated at nmax = 300 and k = 0.2 by default
-    ks = np.arange(0.1, 0.51, 0.01)
+    ks = np.arange(0.1, 0.51, 0.025)
     ns = np.arange(290, 311, 1)
     #Compare to the value calculated at nmax = 300, k = 0.3
-    base = imp.Ram_D_dep(n, state, wave, 300, 0.3, 1)
+    base = sum(imp.S_Raman_Depth(n, state, wave, 300, 0.3, 1))
     #Calculates all the other values and puts into a data frame
-    vals = np.array([[abs(imp.imp.Ram_D_dep(n, state, wave, nmax, k, 1) - base) for k in ks] for nmax in ns])
+    vals = np.array([[abs(sum(imp.S_Raman_Depth(n, state, wave, nmax, k, 1)) - base) for k in ks] for nmax in ns])
     df = pd.DataFrame(vals, columns=np.round(ks, 2), index=np.round(ns, 1))
     
     Fig_Raman_Scattering = plt.figure()

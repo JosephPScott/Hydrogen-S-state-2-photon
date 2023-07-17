@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Last edited on Thur Apr 20 2023
+Last edited on  Monday 17 July 2023
 
 @author: joseph.p.scott@durham.ac.uk
 
@@ -67,7 +67,7 @@ def Overlapelm(n1, n2, l, k): # Overlap matrix elements
     return dict.get(n2 - n1, 0)
 
 
-#The dipole matrix element can be broken into two parts, l raising and l lowering
+#The dipole matrix element can be broken into two parts, l raising...
 def Zplus(nmax, l, k): # Representing the l raising part
     if l >= 0:
         angular = 1
@@ -85,6 +85,7 @@ def Zpluselm(n2, n1, l, k): # l-raising matrix elements
             }
     return dict.get(n2 - n1, 0)
 
+#... and l lowering.
 def Zminus(nmax, l, k): # Representing the l lowering part
     if l > 0:
         angular = 1
@@ -103,9 +104,9 @@ def Zminuselm(n2, n1, l, k):  # l-lowering matrix elements
     return dict.get(n1 - n2, 0)
 
 ###############################################################################
-#Calculation related functions
+#General calculation functions
 
-def Schrodinger(st, nmax, k): # Solves the Schrodinger equation
+def Schrodinger(st, nmax, k): # Solves the Schrodinger equation, st = (n, l), if the full spectrum is desired, input (0, l)
     H = Hamiltonian(nmax, st[1], k)
     T = Overlap(nmax, st[1], k)
     w, v = al.eigh(H, T, type = 1)
@@ -126,7 +127,7 @@ def Implicit_step(H, T, lhs, rhs, E, freq): # Calculates the implicit summation 
 
 def S_pol(n, wave, nmax, k): # Calculates the polarisability of a given s-state
     E, V = Schrodinger((n, 0), nmax, k)
-    za = Zplus(nmax, 0, k)
+    za = Zplus(nmax, 0, k) # only a p intermediate state so l=1
     H = Hamiltonian(nmax, 1, k)
     T = Overlap(nmax, 1, k)
     zb = Zminus(nmax, 1, k)
@@ -137,20 +138,21 @@ def S_pol(n, wave, nmax, k): # Calculates the polarisability of a given s-state
     return angular*(Implicit_step(H, T, lhs, rhs, E, freq) + Implicit_step(H, T, lhs, rhs, E, -1*freq)) # Polarisability is given in a.u.
 
 ###############################################################################
-#Functions relating to the 1S-2S magic wavelengths
+#Functions relating to the 1S-2S magic wavelengths: For calculating the differential polarisability, finding t
 
-#Functions for the differential polarisability of the 1S and 2S states.
+#Functions for the differential polarisability of the 1S and 2S states for either a "wavelength" or "frequency" input.
 def Differential_1S2Spol_wave(wave, H, T, lhs1, lhs2, rhs1, rhs2, E1, E2): # Takes wavelength input in nm
     freq = (h*c)/(wave*10**(-9)*Eh)
     S1 = Implicit_step(H, T, lhs1, rhs1, E1, freq) + Implicit_step(H, T, lhs1, rhs1, E1, -1*freq)
     S2 = Implicit_step(H, T, lhs2, rhs2, E2, freq) + Implicit_step(H, T, lhs2, rhs2, E2, -1*freq)
     return (S2 - S1)/3
+
 def Differential_1S2Spol(freq, H, T, lhs1, lhs2, rhs1, rhs2, E1, E2): # Takes frequency input in a.u.
     S1 = Implicit_step(H, T, lhs1, rhs1, E1, freq) + Implicit_step(H, T, lhs1, rhs1, E1, -1*freq)
     S2 = Implicit_step(H, T, lhs2, rhs2, E2, freq) + Implicit_step(H, T, lhs2, rhs2, E2, -1*freq)
     return (S2 - S1)/3
 
-def Find_1S2S_magicwave(nmax, wguess, k): # Calculate the magic wavelength from a given initial "guess" wavelength
+def Find_1S2S_magicwave(nmax, wguess, k): # Calculate the magic wavelength from a given initial "guess" wavelength by newton raphson
     E1, V1 = Schrodinger((1, 0), nmax, k)
     E2, V2 = Schrodinger((2, 0), nmax, k)
     za = Zplus(nmax, 0, k)
@@ -162,7 +164,7 @@ def Find_1S2S_magicwave(nmax, wguess, k): # Calculate the magic wavelength from 
     rhs1 = np.dot(za, V1)    
     rhs2 = np.dot(za, V2)
     fguess = (h*c)/(wguess*10**(-9)*Eh)
-    root = opt.newton(Differential_1S2Spol, fguess, args = (H, T, lhs1, lhs2, rhs1, rhs2, E1, E2))
+    root = opt.newton(Differential_1S2Spol, fguess, args = (H, T, lhs1, lhs2, rhs1, rhs2, E1, E2)) #Newton-Raphson solve to find minimum in differential polarisability
     return (h*c*10**9)/(root*Eh) # Returns a wavelength in nm
 
 def Magic_1S2S_stability(nmax, wave, k): # Calculate the slope on the differential 1S-2S light shift at a given wavelength
@@ -176,31 +178,39 @@ def Magic_1S2S_stability(nmax, wave, k): # Calculate the slope on the differenti
     lhs2 = np.dot(V2, zb)
     rhs1 = np.dot(za, V1)    
     rhs2 = np.dot(za, V2)
-    return mic.derivative(Differential_1S2Spol_wave, wave, dx = 0.00001, n=1, args=(H, T, lhs1, lhs2, rhs1, rhs2, E1, E2), order=5) # Retruns in atomic units of polarisability per nm
+    return mic.derivative(Differential_1S2Spol_wave, wave, dx = 0.00001, n=1, args=(H, T, lhs1, lhs2, rhs1, rhs2, E1, E2), order=5) # Returns in atomic units of polarisability per nm
 
 ###############################################################################
-#Functions for calculating off resonance scattering rates
+#Functions for calculating atom-photon scattering rates
 
-# Rayleigh scattering rates for hydrogen S states
+# Rayleigh scattering rates for hydrogen S states 
+# Rates are calculated for a specified wavelength and either a well defined intensity (input in SI) or at a given unitless depth - calculated for the specific (n, 0) state that was given as an input n.
 def S_Rayleigh(n, wave, nmax, k, Inten): #Calculates the rayleigh scattering of a given S state at specified wavelength and intensity
     freq = (h*c)/(wave*10**(-9)*Eh)
     I = (Inten*hbar*a0**2)/Eh**2
     return (freq**3)*(fsc**4)*(8*np.pi/3)*(abs(S_pol(n, wave, nmax, k))**2)*I*(Eh/hbar) # Rate is given in per second
 
-def S_Rayleigh_Depth(n, wave, nmax, k, D): #Same as the above, but calculates in terms of lattice depth rather than intensity
+def S_Rayleigh_Depth(n, wave, nmax, k, D): #Same as the above, but calculates in terms of lattice depth (in the target state) rather than intensity
     Erec = (h**2)/(2*(mp+me)*(wave*10**(-9))**2*Eh)
     freq = (h*c)/(wave*10**(-9)*Eh)
     return (freq**3)*(fsc**3)*(4/3)*(abs(S_pol(n, wave, nmax, k)))*D*Erec*(Eh/hbar) # Rate is given in per second 
 
 # Calculates the Raman scattering rate out of an intial S state to specifed S or D state
-def S_Raman(n, final_st, wave, nmax, k, Inten): # Main function for the Raman scattering, final state inputted as a (n, l)
-    I = (Inten*hbar*a0**2)/Eh**2
+# Rates are calculated for a specific wavelength and either a well defined intensity (input in SI) or at a given unitless depth - calculated for the specific (n, 0) state that was given as an input n.
+def S_Raman(n, final_st, wave, nmax, k, Inten): #Calculates Raman scattering rate for a given "n"S state and specified final state final_st = (n, l) at a given intensity "Inten".
     freq = (h*c)/(wave*10**(-9)*Eh)
+    #Represent atomic states
     E_int, V_int = Schrodinger((n, 0), nmax, k)
-    E_fin, V_fin = Schrodinger(final_st, nmax, k)
-    za = Zplus(nmax, 0, k)
+    E_fin, V_fin = Schrodinger(final_st, nmax, k) 
+    # Check for energetically forbidden inputs
+    freq_scatt = -(E_fin - E_int) + freq
+    if  freq_scatt <= 0:
+        return 0, 0
+    I = (Inten*hbar*a0**2)/Eh**2
+    za = Zplus(nmax, 0, k) # Only P intermetidate states, so l=1
     H = Hamiltonian(nmax, 1, k)
     T = Overlap(nmax, 1, k)
+    # The angular components have been calculated analytically depending on if the final state is S or D
     if final_st[1] == 0: # In the case where the final state is an S state
         angular = 1/9
         zb = Zminus(nmax, 1, k)
@@ -213,9 +223,14 @@ def S_Raman(n, final_st, wave, nmax, k, Inten): # Main function for the Raman sc
     rhs = np.dot(za, V_int)
     lhs = np.dot(V_fin, zb)
     #There are two types of scattering processes that can occur
-    P1 = Raman(H, T, lhs, rhs, E_int, E_fin, freq, I) # Scattering of the first type
-    P2 = Raman(H, T, lhs, rhs, E_int, E_fin, -1*freq, I) # Scatteroing of the second type
-    return angular*P1*(Eh/hbar), angular*P2*(Eh/hbar) #Outputs a tuple of both rates in units of per second
+    P1 = (freq_scatt**3)*(fsc**4)*(8*np.pi/3)*abs(Implicit_step(H, T, lhs, rhs, E_int, freq) + Implicit_step(H, T, lhs, rhs, E_fin, -1*freq))**2*I
+    freq_scatt = -(E_fin - E_int) - freq
+    if freq_scatt <= 0: # Conservation of energy constrains the scattering processes, can be seen as a positive definite scattered frequency
+        return angular*P1*(Eh/hbar), 0 # For energetically disallowed processes
+    else:
+        P2 = (freq_scatt**3)*(fsc**4)*(8*np.pi/3)*abs(Implicit_step(H, T, lhs, rhs, E_int, freq) + Implicit_step(H, T, lhs, rhs, E_fin, -1*freq))**2*I
+        return angular*P1*(Eh/hbar), angular*P2*(Eh/hbar) #Outputs a tuple of both rates (Stokes/anti-stokes, SSTPE) in units of per second
+
 
 def Raman(H, T, lhs, rhs, Ea, Eb, freq, I): # The internal Raman step
     freq_scatt = -(Eb - Ea) + freq
@@ -224,8 +239,40 @@ def Raman(H, T, lhs, rhs, Ea, Eb, freq, I): # The internal Raman step
     else:
         return (freq_scatt**3)*(fsc**4)*(8*np.pi/3)*abs(Implicit_step(H, T, lhs, rhs, Ea, freq) + Implicit_step(H, T, lhs, rhs, Eb, -1*freq))**2*I # For energetically allowed processes
 
-def Ram_D_dep(n, final_st, wave, nmax, k, D): # Calculates Raman scattering rates for a given depth (measured in the initial state) lattice
-    Erec = (h**2)/(2*(mp+me)*(wave*10**(-9))**2)
-    pol = abs(S_pol(n, wave, nmax, k))
-    R1, R2 = S_Raman(n, final_st, wave, nmax, k, 1)
-    return R1*(2*ep0*c*D*Erec)/(pol*1.6484E-41), R2*(2*ep0*c*D*Erec)/(pol*1.6484E-41) # Outputs both rates in units of per second
+
+def S_Raman_Depth(n, final_st, wave, nmax, k, D): #Calculates Raman scattering rate for a given "n"S state and specified final state final_st = (n, l) at a given unitless depth (measured in the nS state) "D".
+    freq = (h*c)/(wave*10**(-9)*Eh)
+    #Represent atomic states
+    E_int, V_int = Schrodinger((n, 0), nmax, k)
+    E_fin, V_fin = Schrodinger(final_st, nmax, k)
+    # Check for energetically forbidden inputs
+    freq_scatt = -(E_fin - E_int) + freq
+    if freq_scatt  <= 0:
+        return 0, 0
+    rhs = np.dot(Zplus(nmax, 0, k), V_int) # Only P intermetidate states, so l=1
+    H = Hamiltonian(nmax, 1, k) 
+    T = Overlap(nmax, 1, k)
+    zb = Zminus(nmax, 1, k)
+    lhs_pol = np.dot(V_int, zb)
+    # The polarisability of the state is necessary to obtain it's depth.
+    pol = abs((Implicit_step(H, T, lhs_pol, rhs, E_int, freq) + Implicit_step(H, T, lhs_pol, rhs, E_int, -1*freq))/3)
+    # The angular components have been calculated analytically depending on if the final state is S or D
+    if final_st[1] == 0: # In the case where the final state is an S state
+        angular = 1/9
+        lhs = np.dot(V_fin, zb)
+    elif final_st[1] == 2: # In the case where the final state is a D state
+        angular = 2/9
+        lhs = np.dot(V_fin, Zplus(nmax, 1, k))
+    else: # Handles requests for dipole forbidden final states
+        print("Forbidden")
+        return (0, 0)
+    #Stokes/Anti-Stokes scattering
+    P1 = (2*D*(freq**2)*(freq_scatt**3)*(fsc**5)*abs(Implicit_step(H, T, lhs, rhs, E_int, freq) + Implicit_step(H, T, lhs, rhs, E_fin, -1*freq))**2)/(3*pol*((mp/me) + 1))
+    freq_scatt = -(E_fin - E_int) - freq
+    #SSTPE (only allowed in some cases)
+    if freq_scatt <= 0:
+        return angular*P1*(Eh/hbar), 0
+    else:
+        P2 = (2*D*(freq**2)*(freq_scatt**3)*(fsc**5)*abs(Implicit_step(H, T, lhs, rhs, E_int, -1*freq) + Implicit_step(H, T, lhs, rhs, E_fin, freq))**2)/(3*pol*((mp/me) + 1))
+        return angular*P1*(Eh/hbar), angular*P2*(Eh/hbar) #Outputs a tuple of both rates (Stokes/anti-stokes, SSTPE) in units of per second
+
