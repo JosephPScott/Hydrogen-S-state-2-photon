@@ -7,7 +7,7 @@ In addition to these calculations, this code contains a number of
 
 ## Installation
 
-Modules are available to download directly by a user.
+Modules are available to download directly by a user. The most important module is "Main_calculaltion_functions.py", the others are subsiduary.
 
 ## General Overview
 
