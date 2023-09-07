@@ -3,7 +3,7 @@ These modules contain functions relating to the calculations and figures present
 
 The code covers the calculation of A.C. polarisability (including functions for finding S to S magic wavelenegths), and off-resonance atom-photon scattering rates of hydrogen S states in a linearly polarised, monochromatic, optical field. These terms are separated into radial and angular components: the radial parts are calculated via implicit summation over a basis of radial Sturmian functions, while angular parts are calculated analytically (see the appendices of [paper]() for details).
 
-In addition to these calculations, this code contains a number of 
+In addition to these calculations, this code contains a number of functions used to produce plots and check the stability of calculations.
 
 ## Installation
 
@@ -108,5 +108,5 @@ Department of Physics, Durham University, Durham, UK
 
 joseph.p.scott@durham.ac.uk
 
-## Date
-Monday 17th July 2023
+## Date of last update
+Thursday 7th September 2023
