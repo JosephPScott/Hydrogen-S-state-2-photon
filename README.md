@@ -1,7 +1,7 @@
 # Hydrogen-S-state-2-photon
-These modules contain functions relating to the calculations and figures presented in [paper](). 
+These modules contain functions relating to the calculations and figures presented in ["Trap induced broadening in a potential hydrogen lattice clock"](https://arxiv.org/abs/2309.03753). 
 
-The code covers the calculation of A.C. polarisability (including functions for finding S to S magic wavelenegths), and off-resonance atom-photon scattering rates of hydrogen S states in a linearly polarised, monochromatic, optical field. These terms are separated into radial and angular components: the radial parts are calculated via implicit summation over a basis of radial Sturmian functions, while angular parts are calculated analytically (see the appendices of [paper]() for details).
+The code covers the calculation of A.C. polarisability (including functions for finding S to S magic wavelenegths), and off-resonance atom-photon scattering rates of hydrogen S states in a linearly polarised, monochromatic, optical field. These terms are separated into radial and angular components: the radial parts are calculated via implicit summation over a basis of radial Sturmian functions, while angular parts are calculated analytically (see the appendices of ["Trap induced broadening in a potential hydrogen lattice clock"](https://arxiv.org/abs/2309.03753) for details).
 
 In addition to these calculations, this code contains a number of functions used to produce plots and check the stability of calculations.
 
@@ -74,7 +74,7 @@ Raman_scattering_stability(n, state, wave)
 ```
 
 ### Plotting functions
-These modules are used to generate the plots seen in [paper]().
+These modules are used to generate the plots seen in ["Trap induced broadening in a potential hydrogen lattice clock"](https://arxiv.org/abs/2309.03753).
 
 - "1S_and_2S_polarisability.py"
 Relating to figure 1, this module generates a comparative plot of the atomic polarisabilities of the 1S and 2S state across some spectral range. It also identifies and marks the 2S resonances in this region. It will generate the plot upon running the module and contains no governing function. Altering the parameters of this plot can be done directlt within the module.
@@ -109,4 +109,4 @@ Department of Physics, Durham University, Durham, UK
 joseph.p.scott@durham.ac.uk
 
 ## Date of last update
-Thursday 7th September 2023
+Tuesday 19th September 2023
