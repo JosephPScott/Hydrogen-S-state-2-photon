@@ -18,18 +18,17 @@ import seaborn as sns
 import pandas as pd
 
 ###############################################################################
-#Function used to calculate the Raman scattering cross sections for comparison to previous calculations.
+#Function used to calculate the inelastic scattering cross sections for comparison to previous calculations.
 
-def obtain_cross_section(n, nmax, k):
-    waves = (500, 530, 600, 655, 657, 693.4, 800, 900, 1000, 1060)
-    Inten = 10**4
-    for w in waves:
-        Rate = imp.S_Rayleigh(n, w, nmax, k, Inten)
-        eng = imp.h*imp.c/(w*10**(-9))
-        first = Rate*eng
-        print(f"At {w}")
-        print(f"only first {first}")
-    return 
+def return_cross_section(n, fin_state, wav, nmax, k):
+    energy= (imp.h*imp.c)/(wav*10**-9)
+    if n==fin_state[0] and fin_state[1] == 0:
+        Rate = imp.S_Rayleigh(n, wav, nmax, k, 1)
+        return Rate*energy*10**4
+    else:
+        Rate = imp.S_Raman(n, fin_state, wav, nmax, k, 1)
+        energy= (imp.h*imp.c)/(wav*10**-9)
+        return (Rate[0]*energy*10**4, Rate[1]*energy*10**4)
 
 
 ###############################################################################
@@ -151,7 +150,7 @@ def Polarisabilty_stability(n, wave): # Plots a heatmap showing the variation of
     Fig_Polarisability = plt.figure()
     ax_Polarisability = Fig_Polarisability.add_subplot()
     
-    sns.heatmap(df, ax=ax_Polarisability, cmap="rocket_r")
+    sns.heatmap(df, ax=ax_Polarisability, cmap="rocket_r") #for blue, change cmap="mako_r"
     ax_Polarisability.invert_yaxis()
     
     plt.show()
@@ -168,7 +167,7 @@ def Magic_wavelength_stability(wguess): # Plots a heatmap showing the variation 
     Fig_Magic_Wavelength = plt.figure()
     ax_Magic_Wavelength = Fig_Magic_Wavelength.add_subplot()
     
-    sns.heatmap(df2, ax=ax_Magic_Wavelength, cmap="rocket_r")
+    sns.heatmap(df2, ax=ax_Magic_Wavelength, cmap="rocket_r") #for blue, change cmap="mako_r"
     ax_Magic_Wavelength.invert_yaxis()
     
     plt.show()
@@ -188,7 +187,7 @@ def Raman_scattering_stability(n, state, wave): # Plots a heatmap showing the va
     Fig_Raman_Scattering = plt.figure()
     ax_Raman_Scattering = Fig_Raman_Scattering.add_subplot()
     
-    sns.heatmap(df, ax=ax_Raman_Scattering, cmap="rocket_r")
+    sns.heatmap(df, ax=ax_Raman_Scattering, cmap="rocket_r") #for blue, change cmap="mako_r"
     ax_Raman_Scattering.invert_yaxis()
     
     plt.show()
