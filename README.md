@@ -1,7 +1,7 @@
 # Hydrogen-S-state-2-photon
 These modules contain functions relating to the calculations and figures presented in ["Trap induced broadening in a potential hydrogen lattice clock"](https://arxiv.org/abs/2309.03753). 
 
-The code covers the calculation of A.C. polarisability (including functions for finding S to S magic wavelenegths), and off-resonance atom-photon scattering rates of hydrogen S states in a linearly polarised, monochromatic, optical field. These terms are separated into radial and angular components: the radial parts are calculated via implicit summation over a basis of radial Sturmian functions, while angular parts are calculated analytically (see the appendices of ["Trap induced broadening in a potential hydrogen lattice clock"](https://arxiv.org/abs/2309.03753) for details).
+The code covers the calculation of A.C. polarisability (including functions for finding S to S magic wavelenegths), and off-resonance atom-photon scattering rates of hydrogen S states in a linearly polarised, monochromatic, optical field. These terms are separated into radial and angular components: the radial parts are calculated via implicit summation over a basis of radial Sturmian functions, while angular parts are calculated analytically (see the appendices of [the paper](https://arxiv.org/abs/2309.03753) for details).
 
 In addition to these calculations, this code contains a number of functions used to produce plots and check the stability of calculations.
 
@@ -51,7 +51,7 @@ The second function is designed for calculations in optical lattices. It does th
 The file "Convergence_and_correctness.py" contains a number of functions that are useful for assessing the quality of these calculations. The accuracy of the calculations can be assessed by compating their results to those with known analytic solutions, e.g. comparing the spectrum of the Hamiltonian to the non-relativistic sstructure of hydrogen, or comparing calculated values of Raman scattering cross sections to literature values. The stability of these calculations is assessed by looking at the variation of the calculated value under small changes in the basis parameters nmax and k.
 
 Functions are available to check the following:
-- Calculate Raman scattering cross sections for comparison to existing literature such as [Heno _et. al._](https://pubs.aip.org/aip/jap/article/51/1/11/12151/Raman-like-scattering-processes-in-metastable).
+- Calculate Raman scattering cross sections for comparison to existing literature such as [Klarsfeld](https://doi.org/10.1103/PhysRevA.6.506) or [Heno _et. al._](https://pubs.aip.org/aip/jap/article/51/1/11/12151/Raman-like-scattering-processes-in-metastable).
 ```python
 obtain_cross_section(n, nmax, k)
 ```
@@ -91,7 +91,7 @@ Relating to figure 4, this module produces a single plot to compare the Raman sc
 ```python
 Run_plot()
 ```
-Altering the parameters of this plot can be done directlt within the module.
+Altering the parameters of this plot can be done directly within the module.
 
 ## Dependencies
 - "Main_calculation_functions.py"(imp) - numpy, scipy.
@@ -109,4 +109,4 @@ Department of Physics, Durham University, Durham, UK
 joseph.p.scott@durham.ac.uk
 
 ## Date of last update
-Tuesday 19th September 2023
+Monday 23rd September 2023
