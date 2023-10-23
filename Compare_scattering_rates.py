@@ -119,16 +119,31 @@ def get_Raman_intensity(final_st, E_int, freq, H, T, rhs, zb, I):
 def rec_depth(wave):
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(2, wave, nmax, k)
-    I0 = 1.5536611486546777e-08
+    I0 = 1.5536611486546777e-08 #100MW/cm2 in a.u.
     I = Erec/(2*np.pi*imp.fsc*abs(pol))
     return (I/I0)**2
-# or 1S states.
+# ...or 1S states.
 def S1rec_depth(wave):
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(1, wave, nmax, k)
-    I0 = 1.5536611486546777e-08
+    I0 = 1.5536611486546777e-08 #100MW/cm2 in a.u.
     I = Erec/(2*np.pi*imp.fsc*abs(pol))
     return (I/I0)**2
+
+#function to get the intensity from one unit recoil depth and use it to scale the 3-photon ionisation rates in either the 2S...
+def rec_depth_3p(wave):
+    Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
+    pol = imp.S_pol(2, wave, nmax, k)
+    I0 = 5.23820810495585e-8 #337MW/cm2 in a.u.
+    I = Erec/(2*np.pi*imp.fsc*abs(pol))
+    return (I/I0)**3
+# ...or 1S states.
+def S1rec_depth_3p(wave):
+    Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
+    pol = imp.S_pol(1, wave, nmax, k)
+    I0 = 5.23820810495585e-8 #337MW/cm2
+    I = Erec/(2*np.pi*imp.fsc*abs(pol))
+    return (I/I0)**3
 
 ###############################################################################
 """
@@ -168,57 +183,70 @@ ramrates_intent = np.array([rates_i[i, 1] for i in range(0, len(wavs))])
 #Sets up the figure
 Fig, (ax_intent, ax_2S, ax_1S) = plt.subplots(3, sharex=True, figsize=(9,9), dpi = 100, tight_layout =True)
 
-#General p energy spectrum, needed for resonances.
+#General P state energy spectrum, needed for resonances.
 Es = imp.Schrodinger((0, 1), nmax, k)[0]
 
 
-# Used to add ionisation rates, initially calculated for an intensity of 1E8 W/cm^2 This is used to get the ionisation rates at specific depths or intensities
+# Used to add 2 photon ionisation rates, initially calculated for an intensity of 1E8 W/cm^2 This is used to get the ionisation rates at specific depths or intensities
 df = pd.read_excel('Ionisation_data.xlsx')
 wavs_ion = [w for w in df.Wav]
 rates_ion = [r for r in df.non_pert]
 S1_rates_ion = [(100**2)*S1rec_depth(wavs_ion[i])*rates_ion[i] for i in range(0, len(rates_ion))]
 S2_rates_ion = [(100**2)*rec_depth(wavs_ion[i])*rates_ion[i] for i in range(0, len(rates_ion))]
 intent_rates_ion = [(((3.37E8)/((1E8)))**2)*rates_ion[i] for i in range(0, len(rates_ion))]
+#print("2 photon ionisation done")
+
+Used to add 3 photon ionisation rates, initially calculated for an intensity of 337E8 W/cm^2 This is used to get the ionisation rates at specific depths or intensities
+df2 = pd.read_excel('3photon_ionisation_data.xlsx')
+wavs_ion_higher = [w for w in df2.Wav]
+rates_ion_higher = [r for r in df2.non_pert]
+S1_rates_ion_2 = [(100**3)*S1rec_depth_3p(wavs_ion_higher[i])*rates_ion_higher[i] for i in range(0, len(rates_ion_higher))]
+S2_rates_ion_2 = [(100**3)*rec_depth_3p(wavs_ion_higher[i])*rates_ion_higher[i] for i in range(0, len(rates_ion_higher))]
+intent_rates_ion_2 = [((100/337)**3)*rates_ion_higher[i] for i in range(0, len(rates_ion_higher))]
+#print("3 photon ionisation done")
 
 #General plotting functions
-ax_1S.plot(wavs, ralrates_1S, linestyle="dotted", label="Elastic", linewidth=2)
-ax_1S.plot(wavs, ramrates_1S, label="Inelastic", linewidth=2)
-ax_1S.plot(wavs_ion, S1_rates_ion, linestyle="dashed", label="Ionisation", linewidth = 2)
+ax_1S.plot(wavs, ralrates_1S, linestyle="dotted", label="Elastic scattering", linewidth=2)
+ax_1S.plot(wavs, ramrates_1S, label="Inelastic scattering", linewidth=2)
+ax_1S.plot(wavs_ion, S1_rates_ion, linestyle="dashed", label="2 photon ionisation", linewidth = 2,  color='#2ca02c')
+ax_1S.plot(wavs_ion_higher, S1_rates_ion_2, linestyle="dashdot", label="3 photon ionisation", linewidth = 2,  color='#2ca02c')
 
-ax_2S.plot(wavs, ralrates_2S, linestyle="dotted", label="Elastic", linewidth=2)
-ax_2S.plot(wavs, ramrates_2S, label="Inelastic", linewidth=2)
-ax_2S.plot(wavs_ion, S2_rates_ion, linestyle="dashed", label="Ionisation", linewidth = 2)
+ax_2S.plot(wavs, ralrates_2S, linestyle="dotted", label="Elastic scattering", linewidth=2)
+ax_2S.plot(wavs, ramrates_2S, label="Inelastic scattering", linewidth=2)
+ax_2S.plot(wavs_ion, S2_rates_ion, linestyle="dashed", label="2 photon ionisation", linewidth = 2, color='#2ca02c')
+ax_2S.plot(wavs_ion_higher, S2_rates_ion_2, linestyle="dashdot", label="3 photon ionisation", linewidth = 2, color='#2ca02c')
 
-ax_intent.plot(wavs, ralrates_intent, linestyle="dotted", label="Elastic", linewidth=2)
-ax_intent.plot(wavs, ramrates_intent, label="Inelastic", linewidth=2)
-ax_intent.plot(wavs_ion, intent_rates_ion, linestyle="dashed", label="Ionisation", linewidth = 2)
+ax_intent.plot(wavs, ralrates_intent, linestyle="dotted", label="Elastic scattering", linewidth=2)
+ax_intent.plot(wavs, ramrates_intent, label="Inelastic scattering", linewidth=2)
+ax_intent.plot(wavs_ion, intent_rates_ion, linestyle="dashed", label="2 photon ionisation", linewidth = 2,  color='#2ca02c')
+ax_intent.plot(wavs_ion_higher, intent_rates_ion_2, linestyle="dashdot", label="3 photon ionisation", linewidth = 2,  color='#2ca02c')
 
 for i in range(3, 8): # plots lines relating to resonances in the 2S state, changing the plotting range may requrie this to be updated 
     line = imp.h*imp.c/(imp.Eh*abs(E2 - Es[i - 2]))*10**9
-    ax_1S.plot([line, line], [1, 10**8],  color="black", linewidth=1)
-    ax_2S.plot([line, line], [1, 10000],  color="black", linewidth=1)
-    ax_intent.plot([line, line], [1, 10**8],  color="black", linewidth=1)
+    ax_1S.plot([line, line], [1, 10**7],  color="black", linewidth=1.5)
+    ax_2S.plot([line, line], [1, 10000],  color="black", linewidth=1.5)
+    ax_intent.plot([line, line], [1, 10**7],  color="black", linewidth=1.5)
 
 magicx = [514.646, 443.212, 414.483, 399.451] # plots lines relating to the known 1S-2S magic wavelengths, changing the plotting range may requrie this to be updated 
 for i in range(0, 4):
-    ax_1S.plot([magicx[i], magicx[i]], [1, 10**8],  color ="#d62728", linewidth = 1)
-    ax_2S.plot([magicx[i], magicx[i]], [1, 10000],  color ="#d62728", linewidth = 1)
-    ax_intent.plot([magicx[i], magicx[i]], [1, 10**8] , color ="#d62728", linewidth = 1)
+    ax_1S.plot([magicx[i], magicx[i]], [1, 10**7],  color ="#d62728", linewidth = 1.5)
+    ax_2S.plot([magicx[i], magicx[i]], [1, 10000],  color ="#d62728", linewidth = 1.5)
+    ax_intent.plot([magicx[i], magicx[i]], [1, 10**7] , color ="#d62728", linewidth = 1.5)
     
 ax_1S.set_yscale("log")
 ax_2S.set_yscale("log")
 ax_intent.set_yscale("log")
 
-ax_1S.set_xlabel(r'$\lambda$ [nm]')
+ax_1S.set_xlabel(r'$\lambda$/nm')
 
-ax_1S.set_ylabel(r'$R [s^{-1}]$')
-ax_2S.set_ylabel(r'$R [s^{-1}]$')
-ax_intent.set_ylabel(r'$R [s^{-1}]$')
+ax_1S.set_ylabel(r'$R/s^{-1}$')
+ax_2S.set_ylabel(r'$R/s^{-1}$')
+ax_intent.set_ylabel(r'$R/s^{-1}$')
 
 
-ax_1S.set_ylim(10, 10**8) # neccessary due to the presence of poles and points of 0 in the rate structure
+ax_1S.set_ylim(10, 10**7) # neccessary due to the presence of poles and points of 0 in the rate structure
 ax_2S.set_ylim(1, 10000)
-ax_intent.set_ylim(10, 10**8)
+ax_intent.set_ylim(10, 10**7)
 
 ax_intent.set_xlim(395, 1000) # these should ideally match the range of "wavs"
 ax_intent.legend()
