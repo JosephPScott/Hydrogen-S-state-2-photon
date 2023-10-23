@@ -34,13 +34,14 @@ def Overall(wav, number, E_int, V_int, H, T, zb, rhs, lhs_pol): #Produces the to
     fulls = sum(Srates) + sum(Drates)
     Discs = Running_Disc(wav, pol, number[0])
     Lim = (Limit_Disc(wav, pol, number[1])/fulls)
-    memory = psutil.Process().memory_info().rss
-    print(f"memory at {memory*(1064)**(-2)} MB, or {memory*(1064)**(-3)} GB")
-    toc = time.perf_counter()
-    print(f"Time for Raman process: {toc - tic} s")
-    print(wav)
+    #memory = psutil.Process().memory_info().rss
+    #print(f"memory at {memory*(1064)**(-2)} MB, or {memory*(1064)**(-3)} GB")
+    #toc = time.perf_counter()
+    #print(f"Time for Raman process: {toc - tic} s")
+    #print(wav)
     return np.array([D/fulls for D in Discs]), Lim
-    
+
+#Calculation is the same as in imp
 def get_Raman(final_st, E_int, freq, H, T, rhs, zb, pol):
     E_fin, V_fin = imp.Schrodinger(final_st, nmax, k)
     freq_scatt = -(E_fin - E_int) + freq
