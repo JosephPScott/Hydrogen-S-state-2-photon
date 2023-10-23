@@ -83,7 +83,7 @@ Relating to figure 1, this module generates a comparative plot of the atomic pol
 Relating to figure 2, this module plots the variation of the inelastic scattering rate and two-photon ionisation rate with increasing lattice depth at each of 4 magic wavelengths. Unlike the other plotting modules, it does not rely on data from other files in this repository, but uses specified values that have been calculated prior. Altering the parameters of this plot can be done directlt within the module.
 
 - "Compare_scattering_rates.py"
-Relating to figure 3, this module generates a comparative plot of the Rayleigh and total Raman scattering rates of the 2s state across some spectral range. It also marks the 2S resonances and 1S--2S magic wavelengths in this region. Three plots are generated, one with a constant intensity (337 Mw/cm^2), one at a constant deth in the 2S state, and one at a constant depth in the 1S state. It will generate the plot upon running the module and contains no governing function. Altering the parameters of this plot can be done directlt within the module.
+Relating to figure 3, this module generates a comparative plot of the Rayleigh and total Raman scattering rates of the 2s state across some spectral range. It also marks the 2S resonances and 1S--2S magic wavelengths in this region. Three plots are generated, one with a constant intensity (100 Mw/cm^2), one at a constant depth in the 2S state, and one at a constant depth in the 1S state (see [the paper](https://arxiv.org/abs/2309.03753) for more detail). It will generate the plot upon running the module and contains no governing function. Altering the parameters of this plot can be done directlt within the module.
 **Note: this can take a while to run and so contains code to monitor time and memory consumption. These can be activated by uncommenting them.**
 
 - "Continuum_corrections.py"
@@ -93,12 +93,17 @@ Run_plot()
 ```
 Altering the parameters of this plot can be done directly within the module.
 
+## Additional files
+Also included are two xlsx data files. These contain the results of calculations done in the [STRFLO]() software and are used in "Compare_scattering_rates.py".
+- Ionisation_data/xlsx - 2 photon ionisation rates, calculated perturbatively at 100 MW/cm^2.
+- 3photon_ionisation_data.xlsx - 3 photon ionisation rates, calculated perturbatively at 337 MW/cm^2.
+
 ## Dependencies
 - "Main_calculation_functions.py"(imp) - numpy, scipy.
 - "Convergence_and_correctness_tests.py" - imp, numpy, matplotlib, seaborn, pandas.
 - "1S_and_2S_polarsiability.py" - imp, numpy, matplotlib.
 - "Variations_with_depth.py" - imp, numpy, matplotlib.
-- "Compare_scattering_rates.py" - imp, numpy, matplotlib, "Ionisation_data.xlsx".
+- "Compare_scattering_rates.py" - imp, numpy, matplotlib, "Ionisation_data.xlsx", "3photon_ionisation_data.py".
 - "Continuum_corrections.py" - imp, numpy, scipy, matplotlib.
 
 ## Authors
