@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Last edited on Monday 17 July 2023
+Last edited on Sunday 28 September 2025
 
 @author: joseph.p.scott@durham.ac.uk
+
+This code is made avaiable under the CC0 1.0 Universal license
 
 A module to produce a comparative plot of 2S Rayleigh and Raman scattering rates across a given spectral range.
 The default spectral range is between 395 and 1000 nm.
 Rates are calculated using the module "Main_calculation_functions" in the same project.
 Parameters are controlled directly in the module by altering the relevant variable assignments.
+Most functions are therefore internal and not designed to be called separately.
 """
 
 import Main_calculation_functions as imp
@@ -17,8 +20,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 #Memory management
-import os, psutil
-import time
+#import os, psutil
+#import time
 
 #These define the basis of radial Sturmian functions used in calculations
 nmax = 300
@@ -32,6 +35,9 @@ Therefore, the calculation functions are cannibalised here to make for more effi
 """
 #Scattering rates for a given trap depth (as measured in any specified state)
 def get_values(wave, E_int, V_int, H, T, zb, rhs, lhs_rate, lhs_pol, rhs_pol, E_1):
+    '''
+    Internal function: Returns both the Rayleigh and Raman scattering rates (to all valid final states) of the 2S state of Hydrogen for a given trap depth.
+    '''
     #tic = time.perf_counter()
     freq = (imp.h*imp.c)/(wave*10**(-9)*imp.Eh)
     #We want to be able to plot for depths defined for other states (the 1S), so we calculate two versions of polarisability
@@ -51,6 +57,9 @@ def get_values(wave, E_int, V_int, H, T, zb, rhs, lhs_rate, lhs_pol, rhs_pol, E_
 
 #Scattering rates for a given intensity
 def get_values_intent(wave, E_int, V_int, H, T, zb, rhs, lhs_pol):
+    '''
+    Internal function: Returns both the Rayleigh and Raman scattering rates (to all valid final states) of the 2S state of Hydrogen for a given incident intensity.
+    '''
     #tic = time.perf_counter()
     freq = (imp.h*imp.c)/(wave*10**(-9)*imp.Eh)
     pol = abs((imp.Implicit_step(H, T, lhs_pol, rhs, E_int, freq) + imp.Implicit_step(H, T, lhs_pol, rhs, E_int, -1*freq))/3)
@@ -69,6 +78,9 @@ def get_values_intent(wave, E_int, V_int, H, T, zb, rhs, lhs_pol):
 ###############################################################################
 #Sub-functions to the above two, used to calculate individual ramamn scattering terms at a given depth (in any specified state)...
 def get_Raman(final_st, E_int, freq, H, T, rhs, zb, pol):
+    '''
+    Internal function: Returns a partcular Raman scattering rate from either 1S or 2S (depending on form of operators passed) and some valid target state, final_st. Specifically at a given trap depth.
+    '''
     E_fin, V_fin = imp.Schrodinger(final_st, nmax, k)
     freq_scatt = -(E_fin - E_int) + freq
     if freq_scatt  <= 0:
@@ -93,6 +105,9 @@ def get_Raman(final_st, E_int, freq, H, T, rhs, zb, pol):
     
 #...or at  a constant intensity.
 def get_Raman_intensity(final_st, E_int, freq, H, T, rhs, zb, I):
+    '''
+    Internal function: Returns a partcular Raman scattering rate from either 1S or 2S (depending on form of operators passed) and some valid target state, final_st. Specifically at a given intensity.
+    '''
     E_fin, V_fin = imp.Schrodinger(final_st, nmax, k)
     freq_scatt = -(E_fin - E_int) + freq
     if freq_scatt  <= 0:
@@ -117,6 +132,9 @@ def get_Raman_intensity(final_st, E_int, freq, H, T, rhs, zb, I):
 ###############################################################################
 #function to get the intensity from one unit recoil depth in either the 2S...
 def rec_depth(wave):
+    '''
+    Internal function: Returns the intensity that relates to D=1 (unitless trap depth) in the 2S state
+    '''
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(2, wave, nmax, k)
     I0 = 1.5536611486546777e-08 #100MW/cm2 in a.u.
@@ -124,6 +142,9 @@ def rec_depth(wave):
     return (I/I0)**2
 # ...or 1S states.
 def S1rec_depth(wave):
+    '''
+    Internal function: Returns the intensity that relates to D=1 (unitless trap depth) in the 1S state
+    '''
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(1, wave, nmax, k)
     I0 = 1.5536611486546777e-08 #100MW/cm2 in a.u.
@@ -132,6 +153,9 @@ def S1rec_depth(wave):
 
 #function to get the intensity from one unit recoil depth and use it to scale the 3-photon ionisation rates in either the 2S...
 def rec_depth_3p(wave):
+    '''
+    Scales the imported 3 photon ionisation rates according to 2S trap depth
+    '''
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(2, wave, nmax, k)
     I0 = 5.23820810495585e-8 #337MW/cm2 in a.u.
@@ -139,6 +163,9 @@ def rec_depth_3p(wave):
     return (I/I0)**3
 # ...or 1S states.
 def S1rec_depth_3p(wave):
+    '''
+    Scales the imported 3 photon ionisation rates according to 1S trap depth
+    '''
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(1, wave, nmax, k)
     I0 = 5.23820810495585e-8 #337MW/cm2
@@ -196,7 +223,7 @@ S2_rates_ion = [(100**2)*rec_depth(wavs_ion[i])*rates_ion[i] for i in range(0, l
 intent_rates_ion = [(((3.37E8)/((1E8)))**2)*rates_ion[i] for i in range(0, len(rates_ion))]
 #print("2 photon ionisation done")
 
-Used to add 3 photon ionisation rates, initially calculated for an intensity of 337E8 W/cm^2 This is used to get the ionisation rates at specific depths or intensities
+#Used to add 3 photon ionisation rates, initially calculated for an intensity of 337E8 W/cm^2 This is used to get the ionisation rates at specific depths or intensities
 df2 = pd.read_excel('3photon_ionisation_data.xlsx')
 wavs_ion_higher = [w for w in df2.Wav]
 rates_ion_higher = [r for r in df2.non_pert]
@@ -204,6 +231,7 @@ S1_rates_ion_2 = [(100**3)*S1rec_depth_3p(wavs_ion_higher[i])*rates_ion_higher[i
 S2_rates_ion_2 = [(100**3)*rec_depth_3p(wavs_ion_higher[i])*rates_ion_higher[i] for i in range(0, len(rates_ion_higher))]
 intent_rates_ion_2 = [((100/337)**3)*rates_ion_higher[i] for i in range(0, len(rates_ion_higher))]
 #print("3 photon ionisation done")
+
 
 #General plotting functions
 ax_1S.plot(wavs, ralrates_1S, linestyle="dotted", label="Elastic scattering", linewidth=2)
@@ -239,7 +267,7 @@ ax_intent.set_yscale("log")
 
 ax_1S.set_xlabel(r'$\lambda$/nm')
 
-ax_1S.set_ylabel(r'$R/s^{-1}$')
+ax_1S.set_ylabel(r'$R/s^{-1}$') 
 ax_2S.set_ylabel(r'$R/s^{-1}$')
 ax_intent.set_ylabel(r'$R/s^{-1}$')
 
