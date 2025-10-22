@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Last edited on Monday 17 July 2023
+Last edited on Wednesday 17 September 2025
 
 @author: joseph.p.scott@durham.ac.uk
+
+This code is made avaiable under the CC0 1.0 Universal license
 
 A short script which plots the variation of the perturbalitve values of the inelastic scattering rate and two-photon ionisation rates out of the 2S state at the 1S--2S magic wavelengths.
 """
@@ -29,8 +31,8 @@ ax.plot(depths, [d**2*ion_rate for d in depths], label="Ionisation")
 ax.plot(depths, [d*scatter_rate for d in depths], linestyle="dashed", label="Inelastic scattering rate")
 ax.set_yscale('log')
 ax.set_xscale('log')
-ax.set_xlabel("Depth", fontfamily="serif", fontsize=14)
-ax.set_ylabel("Rate", fontfamily="serif", fontsize=14)
+ax.set_xlabel("Depth $E_{rec}$", fontfamily="serif", fontsize=14)
+ax.set_ylabel("Rate $[s^{-1}]$", fontfamily="serif", fontsize=14)
 
 ax.tick_params(axis="x", labelsize=12)
 ax.tick_params(axis="y", labelsize=12)
@@ -50,6 +52,9 @@ depths = np.arange(1, 4, 0.02)
 
 #Convert between depth and intensity for the ionisation rates. Returns scaling for the ionisation rate per unit depth.
 def get_depth(wave):
+    '''
+    Internal function: scales the ionisation rates according to the unitless depth of the local field
+    '''
     Erec = (imp.h**2)/(2*(imp.mp+imp.me)*(wave*10**(-9))**2*imp.Eh)
     pol = imp.S_pol(2, wave, nmax, k)
     I0 = 1.5536611486546777e-08
