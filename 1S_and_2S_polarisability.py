@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Last edited on Monday 17 July 2023
+Last edited on Monday 29 September 2025
 
 @author: joseph.p.scott@durham.ac.uk
+
+This code is made avaiable under the CC0 1.0 Universal license
 
 A short script which creates a plot of the 1S and 2S polarisabilities in hydrogen across a specified range of wavelengths.
 The intended range of wavelengths can be changed by editing "wlist"
 The plots automatically use a symmetric-log scaling becasuse of the large difference between the polarisabilities of 1S and 2S in this regime
-
 """
 # Import packages
 import Main_calculation_functions as imp
@@ -19,8 +20,13 @@ from matplotlib.ticker import Locator
 nmax = 300
 k = 0.3
 
-wlist = np.arange(395, 1000, 0.2) # Sets up the wavelength range to calculate across
+wlist_1S = np.arange(395, 1000, 0.2) # Sets up the wavelength range to calculate across for the 1S state all values in nm
+wlist_2S = np.arange(395, 1000, 0.2) # For the 2S state
 
+w_min = min(min(wlist_1S), min(wlist_2S)) # finds the minimum wavelength value
+w_max = max(max(wlist_1S), max(wlist_2S)) # finds the maximum wavelength value
+
+plot_range = 500
 ###############################################################################
 #The S_pol function from imp is designed to calculate the polarisability of a given state in a self contained way at a specific wavelength
 #Since we are calculating the polarisability of the same states (with the same angular momentum) across multiple wavelengths, the matrix equations hardly change
@@ -39,17 +45,15 @@ lhs2 = np.dot(V2, zb)
 rhs1 = np.dot(za, V1)
 rhs2 = np.dot(za, V2)
 
-flist = [(imp.h*imp.c)/(w*10**(-9)*imp.Eh) for w in wlist]
-pol1 = np.array([imp.Implicit_step(H, T, lhs1, rhs1, E1, f)/3 + imp.Implicit_step(H, T, lhs1, rhs1, E1, -1*f)/3 for f in flist])# Remembering the angular 1/3 factor
-pol2 = np.array([imp.Implicit_step(H, T, lhs2, rhs2, E2, f)/3 + imp.Implicit_step(H, T, lhs2, rhs2, E2, -1*f)/3 for f in flist])
+flist_1S = [(imp.h*imp.c)/(w*10**(-9)*imp.Eh) for w in wlist_1S]
+flist_2S = [(imp.h*imp.c)/(w*10**(-9)*imp.Eh) for w in wlist_2S]
+pol1 = np.array([imp.Implicit_step(H, T, lhs1, rhs1, E1, f)/3 + imp.Implicit_step(H, T, lhs1, rhs1, E1, -1*f)/3 for f in flist_1S])# Remembering the angular 1/3 factor
+pol2 = np.array([imp.Implicit_step(H, T, lhs2, rhs2, E2, f)/3 + imp.Implicit_step(H, T, lhs2, rhs2, E2, -1*f)/3 for f in flist_2S])
 
-# There are poles on resonances, putting these poles in manually prevents the line which connects +infinty to -infinity across the pole.
-# If changing the wavelength range, more may need to be considered
-pol2[min(range(len(wlist)), key=lambda i : abs(wlist[i] - (imp.h*imp.c*10**(9))/((Es[1] - E2)*imp.Eh)))] = np.nan #2S - 3P
-pol2[min(range(len(wlist)), key=lambda i : abs(wlist[i] - (imp.h*imp.c*10**(9))/((Es[2] - E2)*imp.Eh)))] = np.nan #2S - 4P
-pol2[min(range(len(wlist)), key=lambda i : abs(wlist[i] - (imp.h*imp.c*10**(9))/((Es[3] - E2)*imp.Eh)))] = np.nan #2S - 5P
-pol2[min(range(len(wlist)), key=lambda i : abs(wlist[i] - (imp.h*imp.c*10**(9))/((Es[4] - E2)*imp.Eh)))] = np.nan #2S - 6P
-pol2[min(range(len(wlist)), key=lambda i : abs(wlist[i] - (imp.h*imp.c*10**(9))/((Es[5] - E2)*imp.Eh)))] = np.nan #2S - 7P
+# There are poles on resonances, this prevents the line which connects +infinty to -infinity across the pole fpr the most notable.
+for j in range(1, 7):
+    pol2[min(range(len(wlist_2S)), key=lambda i : abs(wlist_2S[i] - (imp.h*imp.c*10**(9))/((Es[j] - E2)*imp.Eh)))] = np.nan #2S - (2+i)P
+    pol1[min(range(len(wlist_1S)), key=lambda i : abs(wlist_1S[i] - (imp.h*imp.c*10**(9))/((Es[j-1] - E1)*imp.Eh)))] = np.nan #1S - (1+i)P
 
 ###############################################################################
 #This class improves the ticks present for the symmetric log scaling of pyplot.
@@ -94,25 +98,25 @@ class MinorSymLogLocator(Locator):
 
 ###############################################################################
 #General plotting functions
-FigDiffPol = plt.figure()
+FigDiffPol = plt.figure(figsize=(9,3), dpi=100, tight_layout =True)
 AxDiffPol = FigDiffPol.add_subplot()
-AxDiffPol.set_yscale('symlog', linthreshy=1)
-AxDiffPol.plot([395, 1000], [0,0], color="black", linewidth=1.5)
-AxDiffPol.plot(wlist, pol1, linewidth=1.5, label="1S")
-AxDiffPol.plot(wlist, pol2, linewidth=1.5, label="2S")
+AxDiffPol.set_yscale('symlog', linthresh=1)
+AxDiffPol.plot([w_min, w_max], [0,0], color="black", linewidth=1.5)
+AxDiffPol.plot(wlist_1S, pol1, linewidth=1.5, label="1S", linestyle="solid")
+AxDiffPol.plot(wlist_2S, pol2, linewidth=1.5, label="2S")
 
 #Plots lines for the resonances
-AxDiffPol.plot([656.3, 656.3], [-1000,1000], linestyle="dotted", color="black", linewidth=2)
-AxDiffPol.plot([486.7, 486.7], [-1000,1000], linestyle="dotted", color="black", linewidth=2)
-AxDiffPol.plot([434.8, 434.8], [-1000,1000], linestyle="dotted", color="black", linewidth=2)
-AxDiffPol.plot([410.7, 410.7], [-1000,1000], linestyle="dotted", color="black", linewidth=2)
-AxDiffPol.plot([397.9, 397.9], [-1000,1000], linestyle="dotted" ,color="black", linewidth=2)
+for j in range(1, 7):
+    resonance_2S = imp.h*imp.c*10**9/((Es[j]-E2)*imp.Eh)
+    AxDiffPol.plot([resonance_2S, resonance_2S], [-plot_range, plot_range], linestyle="dotted", color="black", linewidth=2)
+    resonance_1S = imp.h*imp.c*10**9/((Es[j-1]-E1)*imp.Eh)
+    AxDiffPol.plot([resonance_1S, resonance_1S], [-plot_range, plot_range], linestyle="dotted", color="black", linewidth=2)
 
 #AxDiffPol.set_title("1S polarisability")
-AxDiffPol.set_ylabel(r"$\alpha$[a.u.]")
-AxDiffPol.set_xlabel(r"$\lambda$[nm]")
-AxDiffPol.set_ylim(-1000, 1000)
-AxDiffPol.set_xlim(395, 1000)
+AxDiffPol.set_ylabel(r"$\alpha$/a.u.")
+AxDiffPol.set_xlabel(r"$\lambda$/nm")
+AxDiffPol.set_ylim(-plot_range, plot_range)
+AxDiffPol.set_xlim(w_min, w_max)
 
 #Corrects the ticks associated with the symmetric log scaling
 yaxis = AxDiffPol.yaxis
