@@ -173,6 +173,8 @@ Also included are two xlsx data files. These contain the results of calculations
 - Ionisation_data/xlsx - 2 photon ionisation rates, calculated perturbatively at 100 MW/cm^2.
 - 3photon_ionisation_data.xlsx - 3 photon ionisation rates, calculated perturbatively at 337 MW/cm^2.
 
+The repo also includes a pyproject.toml file which describes the miminal known compatible versions.
+
 ## Dependencies
 The software was originally developed with Python 3.7, but its compatibilty has been confirmed with Python 3.13. The version numbers listed for the dependencies are the most recent for which compatibilty has been tested:
 
@@ -184,6 +186,8 @@ The software was originally developed with Python 3.7, but its compatibilty has 
 - "Continuum_corrections.py" - imp, numpy 2.3.3, scipy 1.16.2, matplotlib 3.10.6.
 
 Note that some functions were originally written using the scipy.misc.derivative() function which has since been removed. This has been replaced with appropriate use of scipy.optimize.approx_fprime(), the original lines have been commented out and can be re-enabled if desired.
+
+The pyproject.toml file lists the version numbers used in development as they are the earliest versions known to be compatible.
 
 ## Authors
 Joseph P. Scott
