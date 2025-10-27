@@ -1,6 +1,6 @@
 [project]
 name = "hydrogen_s_state_2_photon"
-version = "2.0"
+version = "2.1"
 description = "A collection of code used for the calculation of various 2-photon effects in atomic hydrogen."
 readme = "README.md"
 requires-python = ">=3.7"
