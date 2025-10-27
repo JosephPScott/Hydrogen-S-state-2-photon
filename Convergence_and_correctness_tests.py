@@ -18,6 +18,7 @@ from matplotlib.colors import LogNorm
 import scipy.special as spec
 import seaborn as sns
 import pandas as pd
+import math
 
 ###############################################################################
 #Function used to calculate the inelastic scattering cross sections for comparison to previous calculations.
@@ -171,13 +172,13 @@ def Sturmian_Wavefunction(r, l, k, Vrep): # Function calculates the radial wavef
     '''
     Internal function: calcultes the radial wavefunction at a given position from the Sturmian representation
     '''
-    return sum(np.array([Vrep[i-1]*np.sqrt(np.math.factorial(i - 1)/np.math.factorial(i + 2*l))*(2*k*r)**(l+1)*np.exp(-k*r)*spec.assoc_laguerre(2*k*r, i - 1, 2*l + 1) for i in range(1, len(Vrep)+1)]))
+    return sum(np.array([Vrep[i-1]*np.sqrt(math.factorial(i - 1)/math.factorial(i + 2*l))*(2*k*r)**(l+1)*np.exp(-k*r)*spec.assoc_laguerre(2*k*r, i - 1, 2*l + 1) for i in range(1, len(Vrep)+1)]))
 
 def Analytic_Wavefunction(r, st):  # Function to calculare the he radial wavefunction at position r via the analytic solution
     '''
     Internal function: returns the analytic radial wavefunction at a given position
     '''
-    return np.sqrt(np.math.factorial(st[0]-st[1]-1)/(2*st[0]*np.math.factorial(st[0]+st[1])))*((2*imp.redm)/st[0])**(3/2)*((2*r*imp.redm)/st[0])**st[1]*np.exp(-(r*imp.redm)/st[0])*spec.assoc_laguerre((2*r*imp.redm)/st[0], st[0]-st[1]-1, 2*st[1]+1)
+    return np.sqrt(math.factorial(st[0]-st[1]-1)/(2*st[0]*math.factorial(st[0]+st[1])))*((2*imp.redm)/st[0])**(3/2)*((2*r*imp.redm)/st[0])**st[1]*np.exp(-(r*imp.redm)/st[0])*spec.assoc_laguerre((2*r*imp.redm)/st[0], st[0]-st[1]-1, 2*st[1]+1)
 
 ###############################################################################
 #Functions to check the dipole operators via the calculation of dipople matrix elements
@@ -351,3 +352,4 @@ def Raman_scattering_stability(n, state, wave): # Plots a heatmap showing the va
     
     plt.show()
     return
+
